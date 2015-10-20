@@ -5,8 +5,22 @@ export EDITOR="nano"
 export CLICOLOR=1
 # color docs: http://osxdaily.com/2012/02/21/add-color-to-the-terminal-in-mac-os-x/
 export LSCOLORS=gxcxcxdxfxexexFxFxGxGx
-export XCODE="`xcode-select --print-path`"
-export PATH="/Users/james/bin:$XCODE/Tools:$PATH:/opt/local/bin:/opt/local/sbin"
+export XCODE=$(xcode-select --print-path)
+
+export HOMEBREW_GITHUB_API_TOKEN=deb21da4ac7d4dad48a18dad00cd14edb1066c3a
+
+
+setPath() {
+	local _XCODETOOLS="$XCODE/Tools"
+	local _SWIPROLOG="/Applications/SWI-Prolog.app/Contents/swipl/bin/x86_64-darwin14.3.0"
+	local _HOMEBREW="/opt/local/bin:/opt/local/sbin"
+
+	export PATH="$PATH:/Users/james/bin:$_XCODETOOLS:$_HOMEBREW:$_SWIPROLOG:"
+}
+setPath
+
+
+# PUT THESE IN AN EARLIER STARTUP SCRIPT?
 
 # Load in the git branch prompt script.
 source ~/.git-prompt.sh
@@ -18,8 +32,11 @@ source ~/.bash_color_defs.bash
 SPACE='\[\033[m\]'
 PS1="\[$White\]\h:\[$Yellow\]\w\[$Purple\]\$(__git_ps1) \[$Color_Off\]\u\$ "
 
+# Allow text selection in QuickLook
+defaults write com.apple.finder QLEnableTextSelection -bool TRUE
+
 la () {
-	pwd;ls -alF $1;pwd
+	pwd;ls -alhF $1;pwd
 }
 
 cdla () {
@@ -28,6 +45,26 @@ cdla () {
 
 sublime () {
 	open -a "Sublime Text 2" $1
+}
+
+allFilenamesToLowercase () {
+	for f in *; do mv "$f" "`echo $f | tr "[:upper:]" "[:lower:]"`"; done
+}
+
+allFilenamesDashesForBlanks () {
+	for f in *; do mv "$f" "`echo $f | tr "[:blank:]" "-"`"; done
+}
+
+allFileNamesRemoveDimensions () {
+	for f in *; do mv "$f" "`echo $f | sed 's/-[0-9]*x[0-9]*//'`"; done
+}
+
+normalizeImageFilenames () {
+	allFilenamesToLowercase; allFilenamesDashesForBlanks; allFileNamesRemoveDimensions
+}
+
+allFilesDo () {
+    for f in *; do $1 "$f"; done
 }
 
 colors() {
@@ -57,6 +94,7 @@ colors() {
 	done
 }
 
-if [ -f ~/.git-completion.bash ]; then
-  . ~/.git-completion.bash
-fi
+
+cloc() {
+    perl ~/bin/cloc.pl .
+}
